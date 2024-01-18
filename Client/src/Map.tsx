@@ -1,12 +1,9 @@
-import * as React from 'react';
-import {useState, useCallback} from 'react';
+import { useState, useCallback } from 'react';
 import MapGl from 'react-map-gl';
 
 import DrawControl from './draw-control';
 import ControlPanel from './control-panel';
-
-
-
+import React from 'react';
 
 export default function Map() {
     const [features, setFeatures] = useState({});
@@ -31,9 +28,16 @@ export default function Map() {
         });
     }, []);
 
+    // Define the size of the map
+    const mapSize = {
+        width: '100vw',
+        height: '100vh'
+    };
+
     return (
         <>
             <MapGl
+                {...mapSize}
                 initialViewState={{
                     longitude: -91.874,
                     latitude: 42.76,
@@ -59,5 +63,3 @@ export default function Map() {
         </>
     );
 }
-
-
