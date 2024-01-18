@@ -1,44 +1,65 @@
-import MapboxDraw from "@mapbox/mapbox-gl-draw";
-import { useControl } from "react-map-gl";
+import React, { useRef, useEffect } from 'react';
+import MapboxDraw from '@mapbox/mapbox-gl-draw';
+import { useControl } from 'react-map-gl';
 
-import type { ControlPosition } from "react-map-gl";
+import type { ControlPosition } from 'react-map-gl';
 
 type DrawControlProps = ConstructorParameters<typeof MapboxDraw>[0] & {
   position?: ControlPosition;
-
-  onCreate?: (evt: { features: object[] }) => void;
-  onUpdate?: (evt: { features: object[]; action: string }) => void;
-  onDelete?: (evt: { features: object[] }) => void;
 };
 
 export default function DrawControl(props: DrawControlProps) {
+  const drawRef = useRef<MapboxDraw>();
+
   useControl<MapboxDraw>(
-    () => new MapboxDraw(props),
-    ({ map }) => {
-      map.on("draw.create", props.onCreate);
-      map.on("draw.update", props.onUpdate);
-      map.on("draw.delete", props.onDelete);
-    },
-    ({ map }) => {
-      map.off("draw.create", props.onCreate);
-      map.off("draw.update", props.onUpdate);
-      map.off("draw.delete", props.onDelete);
-    },
-    {
-      position: props.position,
-    },
+      () => {
+        const draw = new MapboxDraw(props);
+        drawRef.current = draw;
+        return draw;
+      },
+      {
+        position: props.position,
+      },
   );
 
-  // Example JSX element (like a button)
+  // Function to start drawing a new polygon
+  const createPolygon = () => {
+    drawRef.current?.changeMode('draw_polygon');
+  };
+
+  const editPolygon = () => {
+    // Add logic here to enable editing of existing polygons
+  };
+
+
+  const deletePolygon = () => {
+    drawRef.current?.deleteAll();
+  };
+
+  const deleteSelectedPolygons = () => {
+    const draw = drawRef.current;
+    if (draw) {
+      const selectedIds = draw.getSelectedIds();
+      if (selectedIds.length > 0) {
+        draw.delete(selectedIds);
+      }
+    }
+  };
+
   return (
-    <button onClick={() => console.log("Draw Control Button Clicked")}>
-      Draw Control Button
-    </button>
+      <div style={{position: "relative", zIndex: 20}}>
+        <button onClick={createPolygon} className="draw-control-button">
+          <span className="material-icons">add</span>
+        </button>
+        <button onClick={editPolygon} className="draw-control-button">
+          <span className="material-icons">edit</span>
+        </button>
+        <button onClick={deletePolygon} className="draw-control-button">
+          <span className="material-icons">delete all</span>
+        </button>
+        <button onClick={deleteSelectedPolygons} className="draw-control-button">
+          <span className="material-icons">delete selected</span>
+        </button>
+      </div>
   );
 }
-
-DrawControl.defaultProps = {
-  onCreate: () => {},
-  onUpdate: () => {},
-  onDelete: () => {},
-};
